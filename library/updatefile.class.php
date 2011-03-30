@@ -130,9 +130,9 @@ class UpdateFile {
                 endif;
 
                 if ($diff->compare != null && $diff->compare != "") {
-                    $query .= $columnName . "=\"" . fixMysqlString($diff->compare, $this->t_id) . "\"";
+                    $query .= $columnName . "='" . fixMysqlString($diff->compare, $this->t_id) . "'";
                 } else {
-                    $query .= $columnName . (is_string($diff->compare) ? "=\"\"" : " (NULL)");
+                    $query .= $columnName . (is_string($diff->compare) ? "=''" : " (NULL)");
                 }
 
             else:
@@ -143,7 +143,7 @@ class UpdateFile {
                             $query .= ",\n";
                         endif;
 
-                        $query .= "\"" . fixMysqlString($data, $this->t_id) . "\"";
+                        $query .= "'" . fixMysqlString($data, $this->t_id) . "'";
                         // MULTI pKEY or NOT PRESENT ( in this case all fields will be used for better deleting )
                     } else if ($keycnt == 0 || ($pColumns && in_array($columnName, $pColumns))) {
                         ++$pc;
@@ -152,9 +152,9 @@ class UpdateFile {
                         endif;
 
                         if ($data != null && $data != "") {
-                            $query .= $columnName . "=\"" . fixMysqlString($data, $this->t_id) . "\"";
+                            $query .= $columnName . "='" . fixMysqlString($data, $this->t_id) . "'";
                         } else {
-                            $query .= $columnName . (is_string($data) ? "=\"\"" : " IS NULL");
+                            $query .= $columnName . (is_string($data) ? "=''" : " IS NULL");
                         }
 
 
@@ -165,9 +165,9 @@ class UpdateFile {
                     // INSERT SYNTAX
                 } else if ($diffType[0] instanceof MyDiff_Diff_Table_Row_New) {
                     if ($data != null && $data != "") {
-                        $query .= "\"" . fixMysqlString($data, $this->t_id) . "\"";
+                        $query .= "'" . fixMysqlString($data, $this->t_id) . "'";
                     } else {
-                        $query .= ( is_string($data) ? "\"\"" : " (NULL)");
+                        $query .= ( is_string($data) ? "''" : " (NULL)");
                     }
 
                     if ($isEnd == false):
@@ -187,7 +187,7 @@ class UpdateFile {
         } else if ($diffType[0] instanceof MyDiff_Diff_Table_Row_Value && $keyvalues != null) {
             $query .= " WHERE ";
             foreach ($keyvalues AS $key) {
-                $query .= $key[0] . " = \"" . $key[1] . "\"";
+                $query .= $key[0] . " = '" . $key[1] . "'";
                 if ($key != end($keyvalues)):
                     $query .= " AND ";
                 endif;
