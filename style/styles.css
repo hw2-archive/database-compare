@@ -1,0 +1,88 @@
+body{
+  font-size: 12px;
+}
+
+h2{
+  font-size: 1.4em;
+}
+
+h3{
+  font-size: 1.1em;
+}
+
+div.databaseForm{
+  width: 300px;
+  float: left;
+  margin-right: 20px;
+}
+
+.clear{
+  clear: left;
+}
+
+.item{
+  border: 1px #c0c0c0 solid;
+  padding: 2px 4px;
+  margin-bottom: 5px;
+}
+
+.database{
+  float: left;
+  width: 45%;
+  margin: 0 20px 0 0;
+}
+
+.missing{
+  color: #E40000;
+}
+
+.new{
+  color: #009800;
+}
+
+.property{
+  color: #FFA500;
+}
+
+.data table{
+  width: 100%;
+}
+
+.data table th{
+  text-align: left;
+  padding: 2px;
+  color: #ffffff;
+  background-color: #000000;
+}
+
+.data table{
+  border-left: 1px #c0c0c0 solid;
+  font-size: 0.8em;
+}
+
+.data table td{
+  border-right: 1px #c0c0c0 solid;
+  border-bottom: 1px #c0c0c0 solid;
+  padding: 2px;
+}
+
+.data table td.value{
+  color: #FFA500;
+  font-weight: bold;
+}
+
+table{
+  /* border-left: 1px #c0c0c0 solid; */
+  font-size: 0.9em;
+}
+
+table td{
+  border: 1px #c0c0c0 solid;
+  padding: 10px;
+}
+
+table td.value{
+  color: #FFA500;
+  font-weight: bold;
+}
+

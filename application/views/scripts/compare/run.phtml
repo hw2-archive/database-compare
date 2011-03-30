@@ -1,0 +1,133 @@
+<html>
+  <head>
+    <title>MyDiff</title>
+    <link rel="stylesheet" href="<?php echo $this->baseUrl('style/styles.css'); ?>" type="text/css"/>
+    <script src="<?php echo $this->baseUrl('js/jquery.min.js'); ?>" type="text/javascript"></script>
+
+    <script type="text/javascript">
+    $(function(){
+      $('a.tableToggle').click(function(){
+        var id = $(this).attr('href');
+        var table = $(id);
+        table.toggle();
+      });
+    });
+    </script>
+
+  </head>
+  <body>
+
+  <p><a href="<?php echo $this->baseUrl('compare/advanced/id/' . $this->id); ?>">Back to table selection</a></p>
+  <?php
+
+  require_once ('library/updatefile.class.php');
+ /* $upFile = new UpdateFile();
+  $upFile->initData($this->comparison);
+  $upFile->writeSchema();
+  $upFile->fillData();
+  $upFile->closeFile();
+*/
+  if (!isset($this->options['type']['showchanges'])):
+          ?> <b> DONE! </b> <?php
+  else:
+
+  ob_end_flush();
+  if(isset($this->options['type']['schema'])):
+  ob_start(); 
+  ?>
+  <h1>Schema</h1>
+  <?php foreach($this->comparison->databases AS $database): ?>
+    <div class="database item">
+      <h2>Database: <?php echo $database->name; ?></h2>
+      <div class="schema">
+      <?php $i = 0; ?>
+      <?php foreach($database->getTables() AS $table): ?>
+        <?php if($table->hasDiffs()): ?>
+        <div class="table item <?php echo implode(' ', $table->getAllTags()); ?>">
+          <h3>Table: <?php echo $table->name; ?></h3>
+          <table class="columns" cellspacing="0" cellpadding="0">
+          <?php foreach($table->getColumns() AS $column): ?>
+            <?php if($column->hasDiffs()): ?>
+            <tr>
+              <td class="column item <?php echo implode(' ', $column->getAllTags()); ?>">
+                <?php echo $column->name; ?>
+                <?php if($column->hasDiffs('MyDiff_Diff_Table_Column_Property')): ?>
+                  <table cellpadding="0" cellspacing="0">
+                  <?php $properties = $column->getDiffs('MyDiff_Diff_Table_Column_Property'); ?>
+                  <?php foreach($properties AS $property): ?>
+                    <tr><td><?php echo $property->metaKey; ?></td><td><?php echo $property->metaValue; ?></td></tr>
+                  <?php endforeach; ?>
+                  </table>
+                <?php endif; ?>
+              </td>
+            </tr>
+            <?php $i++; ?>
+            <?php endif; ?>
+          <?php endforeach; ?>
+          </table>
+        </div>
+        <?php endif;
+            ob_flush();
+            flush();
+        endforeach; ?>
+      <?php if($i == 0): ?><p>No differences found.</p><?php endif; ?>
+      </div>
+
+    </div>
+  <?php endforeach; ?>
+  <div style="clear: left;"></div>
+  <?php endif; ?>
+
+  <?php if(isset($this->options['type']['data'])): ?>
+  <h1>Data</h1>
+  <div class="data">
+  <?php $i = 0; 
+  ob_start();
+  foreach($this->data AS $tblId => $table):
+    if(!empty($table['rows'])): ?>
+    <h2>Table: <?php echo $table['table']->name; ?></h2>
+    <p>(<a href="#table<?php echo $tblId; ?>" class="tableToggle">toggle data view</a>)</p>
+    <table class="dataTable" cellpadding="0" cellspacing="0" id="table<?php echo $tblId; ?>">
+      <thead>
+        <tr>
+        <?php foreach($table['table']->getColumns() AS $column): ?>
+          <th><?php echo $column->name; ?></th>
+        <?php endforeach; ?>
+        </tr>
+      </thead>
+      <tbody>
+      <?php
+      reset($table['rows']);
+      while (list($key, $row) = each($table['rows'])) { ?>
+        <tr class="row <?php echo implode(' ', $row->getAllTags()); ?>">
+          <?php foreach($row->data AS $columnName => $data):  ?>
+            <td class="<?php if($diff = $row->getValueDiff($columnName)): ?>value<?php endif; ?>">
+              <?php if($diff): ?>
+                <?php echo $this->column($diff->value); ?> <span class="comparison"><?php if($diff): ?>[<?php echo $this->column($diff->compare); ?>]<?php endif; ?></span>
+	      <?php else: ?>
+                <?php echo $this->column($data); ?>
+	      <?php endif; ?>
+            </td>
+          <?php endforeach; ?>
+        </tr>
+      <?php } ?>
+      </tbody>
+    </table>
+    <?php $i++; ?>
+    <?php endif;
+    ob_flush();
+    flush();
+    endforeach; ?>
+  <?php if($i == 0): ?><p>No differences found.</p><?php endif; ?>
+  </div>
+  <?php endif;
+  endif;
+  ?>
+
+  <p>This page was created in <?php echo $this->totaltime; ?> seconds using <?php echo $this->totalmem; ?> bytes of memory.</p>
+ <?php
+  ob_flush();
+  flush();
+  ?>
+</body>
+</html>

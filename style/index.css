@@ -1,0 +1,166 @@
+
+/* Font settings */
+
+body, .screen, .screenflat, input, select {
+	font-family: verdana,arial,helvetica,sans-serif;
+}
+
+body, .screen, .screenflat, .vendor, input, select {
+	font-size: 11px;
+}
+
+input.button, input.langbutton {
+	font-size: 10px;
+}
+
+th.screen {
+	font-size: 12px;
+}
+
+body, .screen, .screenflat {
+	font-weight: normal;
+}
+
+th.screen, input.login, input.button, input.langbutton, select, .error {
+	font-weight: bold;
+}
+
+.error, input.langbutton {
+	font-style: italic;
+}
+
+/* Color settings */
+
+body {
+	background-color: #BBBBBB;
+}
+
+table.screen, th.screen, input.login, input.button, input.langbutton, select {
+	background-color: #40364D;
+}
+
+tr.screen, td.screen, td.screenflat, td.error {
+	background-color: #D0D0D0;
+}
+
+.error {
+	color: #FF0000;
+}
+
+.screen, .screenflat {
+	color: #000000;
+}
+
+body, A, .vendor {
+	color: #3F3849;
+}
+
+th.screen, A.vendor:hover, input.login, input.button, input.langbutton, select {
+	color: #F5D300;
+}
+
+/* Alignments */
+
+th.screen {
+	alignment: right;
+	text-align: right;
+}
+
+.floatleft {
+	float: left;
+}
+
+div.footer {
+	text-align: center;
+	alignment: center;
+}
+
+/* Borders */
+
+table.screen {
+	border: solid 1px #40364D;
+}
+
+input, select {
+	border: solid 1px #F5D300;
+}
+
+input.button, input.langbutton {
+	border: outset 2px #BBBBBB;
+}
+
+input.checkbox {
+	border: none;
+}
+
+.vendor {
+	border-top: dashed 1px #777777;
+}
+
+/* Width */
+
+table.screen {
+	width: 600px;
+}
+
+input.button {
+	width: 140px;
+}
+
+input.langbutton {
+	width: 35px;
+}
+
+select {
+	width: 586px;
+}
+
+select.login, select.language, select.fields {
+	width: 200px;
+}
+
+/* Misc */
+
+body {
+	scrollbar-base-color:  #40364d;
+	scrollbar-arrow-color: #F5D300;
+	scrollbar-highlight-color: #90869E;
+	scrollbar-3dlight-color: #87789E;
+	scrollbar-face-color: #40364d;
+	scrollbar-shadow-color: #2F4261;
+	scrollbar-dark-shadow-color: #000000;
+	scrollbar-track-color: #51485F;
+}
+
+form {
+	margin: 0px 0px 0px 0px;
+	position: inline;
+}
+
+div.footer {
+	margin: 10px 0px 0px 0px;
+}
+
+/* Paddings */
+
+th.screen, td.screen, td.error {
+	padding: 5px;
+}
+
+td.screenflat {
+	padding: 3px;
+}
+
+/* Text-Decorations */
+
+A:hover {
+	text-decoration: underline;
+}
+
+A, .vendor, .vendor:hover, .script, .script:link, .script:visited, .script:active {
+	text-decoration: none;
+}
+
+.script:hover {
+	text-decoration: underline;
+}

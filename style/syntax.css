@@ -1,0 +1,34 @@
+
+/* classes for syntax highlighting */
+
+span.signs {
+	color: darkblue;
+}
+
+span.num {
+	color: yellow;
+}
+
+span.ddl {
+	color: blue;
+}
+
+span.dml {
+	color: blue;
+}
+
+span.type {
+	color: purple;
+}
+
+span.const {
+	color: #BB0000;
+}
+
+span.values {
+	color: darkgreen;
+}
+
+span.obj {
+	color: black;
+}
