@@ -58,8 +58,7 @@ class CompareController extends Zend_Controller_Action {
             $database->connect();
         }
 
-        $upFile = new UpdateFile();
-        $upFile->initData($comparison);
+        $upFile = new UpdateFile($comparison,$options);
         // Do compare types
         if (isset($options['type']['schema'])) {
             $comparison->schema();

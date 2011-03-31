@@ -170,6 +170,7 @@ class MyDiff_Comparison {
                 }
             }
 
+            $upFile->writeData($keycnt, $tableName);
             unset($select, $stmt);
 
             $bar->increase();
@@ -310,7 +311,7 @@ class MyDiff_Comparison {
         endif;
     }
 
-    public function rowsSetDiff($row, $option, $compare = null, $isReplace = null) {
+    public function rowsSetDiff(&$row, $option, $compare = null, $isReplace = null) {
         // Assign diffs
         if ($option == "new") {
             $row->addDiff(new MyDiff_Diff_Table_Row_New);

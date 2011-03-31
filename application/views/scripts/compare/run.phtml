@@ -20,13 +20,6 @@
   <p><a href="<?php echo $this->baseUrl('compare/advanced/id/' . $this->id); ?>">Back to table selection</a></p>
   <?php
 
-  require_once ('library/updatefile.class.php');
- /* $upFile = new UpdateFile();
-  $upFile->initData($this->comparison);
-  $upFile->writeSchema();
-  $upFile->fillData();
-  $upFile->closeFile();
-*/
   if (!isset($this->options['type']['showchanges'])):
           ?> <b> DONE! </b> <?php
   else:

@@ -6,34 +6,32 @@ class UpdateFile {
      * Constructor
      *
      */
-    function UpdateFile() {
-        $this->session = null;
-        $this->myFile = "updatepack.sql";
-        $this->fh = fopen($this->myFile, 'w');
-        $this->cIns = 0; // count insert rows
-        $this->cDel = 0; // count delete rows
-
-        $this->tables = array();
-        $this->qCollection = array("update" => array(), "delete" => array(), "insert" => array());
-    }
-
-    function initData($session) {
+    function UpdateFile($session,$options) {
         $this->session = $session;
-        // Connect
-        $this->targetdb = $this->session->databases[1];
-        $this->sourcedb = $this->session->databases[0];
-        $this->s_id = $this->sourcedb->getMysqlConnection();
-        $this->t_id = $this->targetdb->getMysqlConnection();
-        // store table names
-        $this->tables = array($this->sourcedb->getTables(), $this->targetdb->getTables());
+        $this->options = $options;
+        $this->myFile = $options['type']['filename'];
+        $this->fh = @fopen($this->myFile, 'w'); // suppress warnings
+        if ($this->fh != false) {
+            $this->cIns = 0; // count insert rows
+            $this->cDel = 0; // count delete rows
+
+            $this->tables = array();
+            $this->qCollection = array("update" => array(), "delete" => array(), "insert" => array());
+
+            // Connect
+            $this->targetdb = $this->session->databases[1];
+            $this->sourcedb = $this->session->databases[0];
+            $this->s_id = $this->sourcedb->getMysqlConnection();
+            $this->t_id = $this->targetdb->getMysqlConnection();
+            // store table names
+            $this->tables = array($this->sourcedb->getTables(), $this->targetdb->getTables());
+        }
     }
 
-    function fillData($session = null) {
+    function fillData() {
 
-        if ($session)
-            $this->initData($session);
-
-        if (!isset($this->session->options['type']['schema']) && !isset($this->session->options['type']['data'])) {
+        if ($this->fh == false && !isset($this->session->options['type']['schema'])
+                && !isset($this->session->options['type']['data'])) {
             return false;
         }
 
@@ -68,6 +66,9 @@ class UpdateFile {
 
     public function createQuery($row, $pColumns, $keycnt, $tableName) {
 
+        if ($this->fh == false)
+                return false;
+        
         $keyvalues = array();
         $query = "";
         $diffType = $row->getDiffs();
@@ -199,8 +200,8 @@ class UpdateFile {
     }
 
     function writeData($keycnt, $tableName) {
-        if (empty($this->qCollection["delete"]) && empty($this->qCollection["insert"])
-                && empty($this->qCollection["update"])) {
+        if ($this->fh == false && empty($this->qCollection["delete"])
+                && empty($this->qCollection["insert"]) && empty($this->qCollection["update"])) {
             return false;
         }
 
@@ -223,9 +224,6 @@ class UpdateFile {
         fwrite($this->fh, "####\n");
         fwrite($this->fh, "#### " . $tableName . "\n");
         fwrite($this->fh, "#### \n\n");
-
-        var_dump($this->qCollection);
-        die('test');
 
         if (!empty($this->qCollection["delete"])) {
             fwrite($this->fh, "#### DELETES\n");
@@ -254,11 +252,14 @@ class UpdateFile {
     }
 
     function writeSchema() {
+        if ($this->fh == null)
+                return false;
+        
         $tNames = array();
         $tables = array_merge($this->tables[0], $this->tables[1]);
         $tNames = array_unique(array_keys($tables));
 
-        $schema = generateScript($tNames, $this->targetdb, $this->sourcedb, $_SESSION["options"]["syntax"], TRUE);
+        $schema = generateScript($this->options,$tNames, $this->targetdb, $this->sourcedb);
         if ($schema != ""):
             fwrite($this->fh, $schema . "\n\n\n");
             unset($schema);
@@ -266,7 +267,8 @@ class UpdateFile {
     }
 
     function closeFile() {
-        fclose($this->fh);
+        if ($this->fh != null)
+            fclose($this->fh);
     }
 
 }

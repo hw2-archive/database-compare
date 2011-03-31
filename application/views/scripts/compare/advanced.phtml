@@ -1,138 +1,137 @@
 <html>
-  <head>
-    <title>Diff Tool <?php echo VERSION; ?></title>
-    <link rel="stylesheet" href="<?php echo $this->baseUrl('style/styles.css'); ?>" type="text/css"/>
-    <script src="<?php echo $this->baseUrl('js/jquery.min.js'); ?>" type="text/javascript"></script>
+    <head>
+        <title>Diff Tool <?php echo VERSION; ?></title>
+        <link rel="stylesheet" href="<?php echo $this->baseUrl('style/styles.css'); ?>" type="text/css"/>
+        <script src="<?php echo $this->baseUrl('js/jquery.min.js'); ?>" type="text/javascript"></script>
 
-    <script type="text/javascript">
-    function jqCheckAll(rel, checked)
-    {
-        $("INPUT[rel=" + rel + "][type='checkbox']").attr('checked', checked);
-    }
-    </script>
+        <script type="text/javascript">
+            function jqCheckAll(rel, checked)
+            {
+                $("INPUT[rel=" + rel + "][type='checkbox']").attr('checked', checked);
+            }
+        </script>
 
-  </head>
-  <body>
+    </head>
+    <body>
 
-  <p><a href="<?php echo $this->baseUrl(''); ?>">Back to database selection</a></p>
+        <p><a href="<?php echo $this->baseUrl(''); ?>">Back to database selection</a></p>
 
-  <form action="" method="post">
-    <fieldset class="submit">
-      <input type="submit" value="Compare" />
-    </fieldset>
+        <form action="" method="post">
+            <fieldset class="submit">
+                <input type="submit" value="Compare" />
+            </fieldset>
 
-    <h1>Compare</h1>
-    <fieldset>
-      <input type="checkbox" name="options[type][schema]" value="1" checked="checked" />
-      <label class="right" for="options[type][schema]">Schema</label>
-    </fieldset>
-    <fieldset>
-      <input type="checkbox" name="options[type][data]" value="1" checked="checked" />
-      <label class="right" for="options[type][data]">Data</label>
-    </fieldset>
+            <h1>Compare</h1>
+            <fieldset>
+                <input type="checkbox" name="options[type][schema]" value="1" checked="checked" />
+                <label class="right" for="options[type][schema]">Schema</label>
+            </fieldset>
+            <fieldset>
+                <input type="checkbox" name="options[type][data]" value="1" checked="checked" />
+                <label class="right" for="options[type][data]">Data</label>
+            </fieldset>
 
-    <input name="sc" type="hidden" value="<?php echo $_GET["sc"]; ?>" />
+            <input name="sc" type="hidden" value="<?php echo $_GET["sc"]; ?>" />
 
-    
-    <table class="screen" cellspacing="0">
-            <colgroup>
+
+            <table class="screen" cellspacing="0">
+                <colgroup>
                     <col width="100" />
                     <col width="20" />
                     <col width="480" />
-            </colgroup>
-            <tr class="head">
+                </colgroup>
+                <tr class="head">
                     <th class="screen" colspan="3">
-                            <span class="floatleft"> FILE OPTIONS ( to implement ) : </span>
+                        <span class="floatleft"> FILE OPTIONS: </span>
                     </th>
-            </tr>
-            <!-- old method to send options, to update -->
-            <tr>
-                    <td class="screenflat"><input class="checkbox" id="chkOptType_0" name="chkOptType" type="radio" value="1"<?php echo ( !isset($_SESSION["options"]["type"]) || $_SESSION["options"]["type"]==1 ? " checked=\"checked\"" : "" ); ?> /><label for="chkOptType_0"> <?php echo ext_htmlentities("yes"); ?></label>&nbsp;&nbsp;<input class="checkbox" id="chkOptType_1" name="chkOptType" type="radio" value="0"<?php echo ( isset($_SESSION["options"]["type"]) && ($_SESSION["options"]["type"]==0) ? " checked=\"checked\"" : "" ); ?> /><label for="chkOptType_1"> <?php echo ext_htmlentities("no"); ?></label></td>
-                    <td class="screenflat">&nbsp;</td>
-                    <td class="screenflat"><label for="chkOptType_0"><b><?php echo ext_htmlentities("Change table type"); ?></b></label></td>
-            </tr>
-            <tr>
-                    <td class="screenflat"><input class="checkbox" id="chkOptOptions_0" name="chkOptOptions" type="radio" value="1"<?php echo ( !isset($_SESSION["options"]["options"]) || $_SESSION["options"]["options"]==1 ? " checked=\"checked\"" : "" ); ?> /><label for="chkOptOptions_0"> <?php echo ext_htmlentities("yes"); ?></label>&nbsp;&nbsp;<input class="checkbox" id="chkOptOptions_1" name="chkOptOptions" type="radio" value="0"<?php echo ( isset($_SESSION["options"]["options"]) && $_SESSION["options"]["options"]==0 ? " checked=\"checked\"" : "" ); ?> /><label for="chkOptOptions_1"> <?php echo ext_htmlentities("no"); ?></label></td>
-                    <td class="screenflat">&nbsp;</td>
-                    <td class="screenflat"><label for="chkOptOptions_0"><b><?php echo ext_htmlentities("Alter table options"); ?></b></label></td>
-            </tr>
-            <tr>
-                    <td class="screenflat"><input class="checkbox" id="chkOptComment_0" name="chkOptComment" type="radio" value="1"<?php echo ( !isset($_SESSION["options"]["comment"]) || $_SESSION["options"]["comment"]==1 ? " checked=\"checked\"" : "" ); ?> /><label for="chkOptComment_0"> <?php echo ext_htmlentities("yes"); ?></label>&nbsp;&nbsp;<input class="checkbox" id="chkOptComment_1" name="chkOptComment" type="radio" value="0"<?php echo ( isset($_SESSION["options"]["comment"]) && $_SESSION["options"]["comment"]==0 ? " checked=\"checked\"" : "" ); ?> /><label for="chkOptComment_1"> <?php echo ext_htmlentities("no"); ?></label></td>
-                    <td class="screenflat">&nbsp;</td>
-                    <td class="screenflat"><label for="chkOptComment_0"><b><?php echo ext_htmlentities("Alter comments"); ?></b></label></td>
-            </tr>
-            <tr>
-                    <td class="screenflat"><input class="checkbox" id="optShort_0" name="optShort" type="radio" value="1"<?php echo ( !isset($_SESSION["options"]["comment"]) || $_SESSION["options"]["comment"]==1 ? " checked=\"checked\"" : "" );?> /><label for="optShort_0"> <?php echo ext_htmlentities("yes"); ?></label>&nbsp;&nbsp;<input class="checkbox" id="optShort_1" name="optShort" type="radio" value="0"<?php echo ( isset($_SESSION["options"]["comment"]) && $_SESSION["options"]["comment"]==0 ? " checked=\"checked\"" : "" ); ?> /><label for="optShort_1"> <?php echo ext_htmlentities("no"); ?></label></td>
-                    <td class="screenflat">&nbsp;</td>
-                    <td class="screenflat"><label for="optShort_0"><b><?php echo ext_htmlentities("Merge statements"); ?></b></label></td>
-            </tr>
-            <tr>
-                    <td class="screenflat"><input class="checkbox" id="chkOptBackticks_0" name="chkOptBackticks" type="radio" value="1"<?php echo ( isset($_SESSION["options"]["backticks"]) && $_SESSION["options"]["backticks"]==1 ? " checked=\"checked\"" : "" ); ?> /><label for="chkOptBackticks_0"> <?php echo ext_htmlentities("yes"); ?></label>&nbsp;&nbsp;<input class="checkbox" id="chkOptBackticks_1" name="chkOptBackticks" type="radio" value="0"<?php echo ( !isset($_SESSION["options"]["backticks"]) || $_SESSION["options"]["backticks"]==0 ? " checked=\"checked\"" : "" ); ?> /><label for="chkOptBackticks_1"> <?php echo ext_htmlentities("no"); ?></label></td>
-                    <td class="screenflat">&nbsp;</td>
-                    <td class="screenflat"><label for="chkOptBackticks_0"><b><?php echo ext_htmlentities("Use Backticks for table and attribute names"); ?></b></label></td>
-            </tr>
-           <!-- <tr>
-                    <td class="screenflat"><input class="checkbox" id="chkOptSyntax_0" name="chkOptSyntax" type="radio" value="1"<?php // echo ( !isset($_SESSION["options"]["syntax"]) || $_SESSION["options"]["syntax"]==1 ? " checked=\"checked\"" : "" ); ?> /><label for="chkOptSyntax_0"> <?php // echo ext_htmlentities("yes"); ?></label>&nbsp;&nbsp;<input class="checkbox" id="chkOptSyntax_1" name="chkOptSyntax" type="radio" value="0"<?php // echo ( isset($_SESSION["options"]["syntax"]) && $_SESSION["options"]["syntax"]==0 ? " checked=\"checked\"" : "" ); ?> /><label for="chkOptSyntax_1"> <?php // echo "no"; ?></label></td>
-                    <td class="screenflat">&nbsp;</td>
-                    <td class="screenflat"><label for="chkOptSyntax_0"><b><?php // echo ext_htmlentities("Syntax highlighting"); ?></b></label></td>
-            </tr> -->
-           <!-- <tr>
-                    <td class="screenflat"><input class="checkbox" id="optConnection_0" name="optConnection" type="radio" value="1"<?php // echo ( isset($_SESSION["options"]["connection"]) && $_SESSION["options"]["connection"]==1 ? " checked=\"checked\"" : "" ); ?> /><label for="optConnection_0"> <?php // echo ext_htmlentities("yes"); ?></label>&nbsp;&nbsp;<input class="checkbox" id="optConnection_1" name="optConnection" type="radio" value="0"<?php // echo ( !isset($_SESSION["options"]["connection"]) || $_SESSION["options"]["connection"]==0 ? " checked=\"checked\"" : "" ); ?> /><label for="optConnection_1"> <?php // echo ext_htmlentities("no"); ?></label></td>
-                    <td class="screenflat">&nbsp;</td>
-                    <td class="screenflat"><label for="optConnection_0"><b><?php // echo ext_htmlentities("Show connection state"); ?></b></label></td>
-            </tr> -->
-            <tr class="head">
+                </tr>
+                <tr>
+                    <td><input type="text" name="options[type][filename]" value="sql/updatepack.sql"/></td>
+                    <td>&nbsp;</td>
+                    <td><label for="options[type][filename]"><b>Write path and filename for your diff queries. If no path but only file name specified , it will be created under folder where index.php is located. Leave blank for no file creation</b></label></td>
+                </tr>
+               <!-- <tr>
+                    <td><input type="checkbox" name="options[type][filetimestamp]" value="1"/></td>
+                    <td>&nbsp;</td>
+                    <td><label for="options[type][filetimestamp]"><b>Add timestamp suffix at file name</b></label></td>
+                </tr> -->
+                <tr>
+                    <td><input type="checkbox" name="options[type][changetype]" value="1" checked/></td>
+                    <td>&nbsp;</td>
+                    <td><label for="options[type][changetype]"><b>Change table type</b></label></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" name="options[type][alteroptions]" value="1" checked/></td>
+                    <td>&nbsp;</td>
+                    <td><label for="options[type][alteroptions]"><b>Include alter table options</b></label></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" name="options[type][altercomments]" value="1"/></td>
+                    <td>&nbsp;</td>
+                    <td><label for="options[type][altercomments]"><b>Comment unsafe changes that need data modification</b></label></td>
+                </tr>
+               <!-- <tr>
+                    <td><input type="checkbox" name="options[type][mergestat]" value="1"/></td>
+                    <td>&nbsp;</td>
+                    <td><label for="options[type][mergestat]"><b>Merge statements</b></label></td>
+                </tr> -->
+                <tr>
+                    <td><input type="checkbox" name="options[type][backticks]" value="1" checked/></td>
+                    <td>&nbsp;</td>
+                    <td><label for="options[type][backticks]"><b>Use Backticks for table and attribute names (partially implemented)</b></label></td>
+                </tr>
+                <tr class="head">
                     <th class="screen" colspan="3">
-                            <span class="floatleft"> OTHER OPTIONS: </span>
+                        <span class="floatleft"> OTHER OPTIONS: </span>
                     </th>
-            </tr>
-            <tr>
-                <td><input type="checkbox" name="options[type][showchanges]" value="1"/></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" name="options[type][showchanges]" value="1"/></td>
                     <td>&nbsp;</td>
                     <td><label for="options[type][showchanges]"><b>Show all schema/data changes in your browser (it could take lot of memory with very big databases )</b></label></td>
-            </tr>
-            <tr>
+                </tr>
+                <tr>
                     <td><input type="checkbox" name="options[type][allfields]" value="1" /></td>
                     <td>&nbsp;</td>
                     <td><label for="options[type][allfields]"><b>Include fields that don't exists in original (Experimental - not recommended, instead do schema compare and import changes in db, then do data compare)</b></label></td>
-            </tr>
-            <tr>
-                <td><input type="checkbox" name="options[type][replace]" value="1" disabled/></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" name="options[type][replace]" value="1" disabled/></td>
                     <td>&nbsp;</td>
                     <td><label for="options[type][replace]"><b>( to implement) Use "replace into" instead "update" for changed rows, it will speed up the compare process, but all fields of the rows will be replaced</b></label></td>
-            </tr>
-            <tr>
+                </tr>
+                <tr>
                     <td><select name="options[type][algorithm]">
                             <option value="groupby" selected>Group By</option>
-                          <option value="fullarray">Array Diff</option>
+                            <option value="fullarray">Array Diff</option>
                         </select> </td>
                     <td>&nbsp;</td>
                     <td><label for="options[type][algorithm]"><b>Choose the algorithm you want to use to compare tables , Group By is very fast , but both databases must be in same host, using Array instead can be slow , but works also db with different hosts</b> </label></td>
-            </tr>
-    </table>
-    <br />
+                </tr>
+            </table>
+            <br />
 
-    <h1>Tables</h1>
-    <?php foreach($this->comparison->databases AS $dbI => $database): ?>
-      <div class="database item">
-        <h2>Database: <?php echo $database->name; ?></h2>
-        <input type="button" value="All" onclick="jqCheckAll('db<?php echo $dbI; ?>', true);" />
-        <input type="button" value="None" onclick="jqCheckAll('db<?php echo $dbI; ?>', false);" />
-        <?php foreach($database->getTables() AS $tableI => $table): ?>
-          <fieldset>
-            <input type="checkbox" name="options[database][<?php echo $dbI; ?>][table][<?php echo $tableI; ?>]" value="1" rel="db<?php echo $dbI; ?>" checked="checked" />
-            <label class="right" for="options[database][<?php echo $dbI; ?>][table][<?php echo $tableI; ?>]"><?php echo $table->name; ?></label>
-          </fieldset>
-        <?php endforeach; ?>
-      </div>
-    <?php endforeach; ?>
+            <h1>Tables</h1>
+            <?php foreach ($this->comparison->databases AS $dbI => $database): ?>
+                <div class="database item">
+                    <h2>Database: <?php echo $database->name; ?></h2>
+                    <input type="button" value="All" onclick="jqCheckAll('db<?php echo $dbI; ?>', true);" />
+                    <input type="button" value="None" onclick="jqCheckAll('db<?php echo $dbI; ?>', false);" />
+                <?php foreach ($database->getTables() AS $tableI => $table): ?>
+                    <fieldset>
+                        <input type="checkbox" name="options[database][<?php echo $dbI; ?>][table][<?php echo $tableI; ?>]" value="1" rel="db<?php echo $dbI; ?>" checked="checked" />
+                        <label class="right" for="options[database][<?php echo $dbI; ?>][table][<?php echo $tableI; ?>]"><?php echo $table->name; ?></label>
+                    </fieldset>
+                <?php endforeach; ?>
+                </div>
+            <?php endforeach; ?>
 
-    <div style="clear: left;"></div>
+            <div style="clear: left;"></div>
 
-    <fieldset class="submit">
-      <input type="submit" value="Compare" />
-    </fieldset>
-  </form>
+            <fieldset class="submit">
+                <input type="submit" value="Compare" />
+            </fieldset>
+        </form>
 
-	</body>
+    </body>
 </html>

@@ -145,10 +145,12 @@ class MyDiff_Table extends MyDiff_Item {
      * Remove data from rows that don't have any differences
      */
     public function pruneRows() {
-        reset($this->_rows);
-        while (list($rowId, $row) = each($this->_rows)) {
-            if (!$row->hasDiffs())
-                unset($this->_rows[$rowId]);
+        if (!empty($this->_rows)) {
+            reset($this->_rows);
+            while (list($rowId, $row) = each($this->_rows)) {
+                if (!$row->hasDiffs())
+                    unset($this->_rows[$rowId]);
+            }
         }
     }
 
