@@ -2,7 +2,7 @@
 /*  ------------------------------------- *
  *
  *    Projekt:   MySQL Diff
- *    F�r:
+ *    For:
  *    Copyright: Lippe-Net Online-Service
  *               Bielefeld, Lemgo
  *               (c) 2001-2003
@@ -56,6 +56,39 @@ function fixMysqlString($string, &$link) {
     else:
         return mysql_real_escape($string);
     endif;
+}
+
+function fixFieldName($backticks,$name,$skipReserved = false) {
+
+    $reservedwords = array(
+        "ADD", "ACTION", "ALL", "ALTER", "ANALYZE", "AND", "AS", "ASC", "ASENSITIVE", "AUTO_INCREMENT",
+        "BDB", "BEFORE", "BERKELEYDB", "BETWEEN", "BIGINT", "BINARY", "BIT", "BLOB", "BOTH", "BTREE", "BY",
+        "CALL", "CASCADE", "CASE", "CHANGE", "CHAR", "CHARACTER", "CHECK", "COLLATE", "COLUMN", "COLUMNS", "CONNECTION", "CONSTRAINT", "CREATE", "CROSS", "CURRENT_DATE", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURSOR",
+        "DATE", "DATABASE", "DATABASES", "DAY_HOUR", "DAY_MINUTE", "DAY_SECOND", "DEC", "DECIMAL", "DECLARE", "DEFAULT", "DELAYED", "DELETE", "DESC", "DESCRIBE", "DISTINCT", "DISTINCTROW", "DIV", "DOUBLE", "DROP",
+        "ENUM", "ELSE", "ELSEIF", "ENCLOSED", "ERRORS", "ESCAPED", "EXISTS", "EXPLAIN",
+        "FALSE", "FIELDS", "FLOAT", "FOR", "FORCE", "FOREIGN", "FROM", "FULLTEXT",
+        "GRANT", "GROUP",
+        "HASH", "HAVING", "HIGH_PRIORITY", "HOUR_MINUTE", "HOUR_SECOND",
+        "IF", "IGNORE", "IN", "INDEX", "INFILE", "INNER", "INNODB", "INOUT", "INSENSITIVE", "INSERT", "INT", "INTEGER", "INTERVAL", "INTO", "IS", "ITERATE",
+        "JOIN",
+        "KEY", "KEYS", "KILL",
+        "LEADING", "LEAVE", "LEFT", "LIKE", "LIMIT", "LINES", "LOAD", "LOCALTIME", "LOCALTIMESTAMP", "LOCK", "LONG", "LONGBLOB", "LONGTEXT", "LOOP", "LOW_PRIORITY",
+        "MASTER_SERVER_ID", "MATCH", "MEDIUMBLOB", "MEDIUMINT", "MEDIUMTEXT", "MIDDLEINT", "MINUTE_SECOND", "MOD", "MRG_MYISAM",
+        "NATURAL", "NO", "NOT", "NULL", "NUMERIC",
+        "ON", "OPTIMIZE", "OPTION", "OPTIONALLY", "OR", "ORDER", "OUT", "OUTER", "OUTFILE",
+        "PRECISION", "PRIMARY", "PRIVILEGES", "PROCEDURE", "PURGE",
+        "READ", "REAL", "REFERENCES", "REGEXP", "RENAME", "REPEAT", "REPLACE", "REQUIRE", "RESTRICT", "RETURN", "RETURNS", "REVOKE", "RIGHT", "RLIKE", "RTREE",
+        "SELECT", "SENSITIVE", "SEPARATOR", "SET", "SHOW", "SMALLINT", "SOME", "SONAME", "SPATIAL", "SPECIFIC", "SQL_BIG_RESULT", "SQL_CALC_FOUND_ROWS", "SQL_SMALL_RESULT", "SSL", "STARTING", "STRAIGHT_JOIN", "STRIPED",
+        "TABLE", "TABLES", "TERMINATED", "TEXT", "THEN", "TIME", "TIMESTAMP", "TINYBLOB", "TINYINT", "TINYTEXT", "TO", "TRAILING", "TRUE", "TYPES",
+        "UNION", "UNIQUE", "UNLOCK", "UNSIGNED", "UNTIL", "UPDATE", "USAGE", "USE", "USER_RESOURCES", "USING",
+        "VALUES", "VARBINARY", "VARCHAR", "VARCHARACTER", "VARYING",
+        "WARNINGS", "WHEN", "WHERE", "WHILE", "WITH", "WRITE",
+        "XOR",
+        "YEAR_MONTH",
+        "ZEROFILL"
+    );
+
+    return ($backticks && ( preg_match("/[^a-z0-9]/i", $name) || (!$skipReserved && in_array(strtoupper($name), $reservedwords))) ? "`" . $name . "`" : $name);
 }
 
 ?>

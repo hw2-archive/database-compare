@@ -72,17 +72,18 @@ class UpdateFile {
         $keyvalues = array();
         $query = "";
         $diffType = $row->getDiffs();
+        $backticks = $this->options['type']['backticks'];
 
         // actually we can't collect updates, to implement checking by column
         if ($diffType[0] instanceof MyDiff_Diff_Table_Row_Value) {
-            $this->qCollection["update"][] = "UPDATE " . $tableName . " SET ";
+            $this->qCollection["update"][] = "UPDATE " . fixFieldName($backticks, $tableName) . " SET ";
             // INSERT VALUES PREFIX
         } else if ($diffType[0] instanceof MyDiff_Diff_Table_Row_New) {
             ++$this->cIns;
             if ($this->cIns > 1):
                 $this->qCollection["insert"][] = ",\n";
             else:
-                $insertPrefix = "INSERT INTO " . $tableName . " (";
+                $insertPrefix = "INSERT INTO " . fixFieldName($backticks, $tableName) . " (";
                 $first = true;
                 reset($row->data);
                 while (list($columnName, $data) = each($row->data)) {
@@ -104,9 +105,9 @@ class UpdateFile {
         } else if ($diffType[0] instanceof MyDiff_Diff_Table_Row_Missing) {
             if ($keycnt == 1) {
                 if ($this->cDel == 0)
-                    $this->qCollection["delete"][] = "DELETE FROM " . $tableName . " WHERE " . $pColumns[1] . " IN (\n";
+                    $this->qCollection["delete"][] = "DELETE FROM " . fixFieldName($backticks, $tableName) . " WHERE " . $pColumns[1] . " IN (\n";
             } else {
-                $this->qCollection["delete"][] = "DELETE FROM " . $tableName . " WHERE ";
+                $this->qCollection["delete"][] = "DELETE FROM " . fixFieldName($backticks, $tableName) . " WHERE ";
             }
             ++$this->cDel;
         }
@@ -133,7 +134,7 @@ class UpdateFile {
                 if ($diff->compare != null && $diff->compare != "") {
                     $query .= $columnName . "='" . fixMysqlString($diff->compare, $this->t_id) . "'";
                 } else {
-                    $query .= $columnName . (is_string($diff->compare) ? "=''" : " (NULL)");
+                    $query .= $columnName . (is_string($diff->compare) ? "=''" : "=(NULL)");
                 }
 
             else:
@@ -168,7 +169,7 @@ class UpdateFile {
                     if ($data != null && $data != "") {
                         $query .= "'" . fixMysqlString($data, $this->t_id) . "'";
                     } else {
-                        $query .= ( is_string($data) ? "''" : " (NULL)");
+                        $query .= ( is_string($data) ? "''" : "(NULL)");
                     }
 
                     if ($isEnd == false):

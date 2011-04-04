@@ -99,15 +99,19 @@ function alternateNullDefault($type) {
 }
 
 function fieldString($field, $withname=TRUE) {
-    return ( $withname ? objectName($field["name"]) . " " : "" ) . typeString($field["type"]) . ( $field["null"] ? " " . highlightString("NULL", HIGHLIGHT_CONSTANTS) : " " . highlightString("NOT NULL", HIGHLIGHT_CONSTANTS) ) . " " . ( isset($field["extra"]) && $field["extra"] != "" ? $field["extra"] : ( highlightString("DEFAULT", HIGHLIGHT_DDL) . " " . ( isset($field["default"]) ? highlightstring("'" . $field["default"] . "'", HIGHLIGHT_VALUES) : ( $field["null"] ? highlightString("NULL", HIGHLIGHT_CONSTANTS) : alternateNullDefault($field["type"]) ) ) ) );
+    GLOBAL $options;
+    return ( $withname ? fixFieldName(isset($options['type']['backticks']),$field["name"]) . " " : "" ) . typeString($field["type"]) . ( $field["null"] ? " " . highlightString("NULL", HIGHLIGHT_CONSTANTS) : " " . highlightString("NOT NULL", HIGHLIGHT_CONSTANTS) ) . " " . ( isset($field["extra"]) && $field["extra"] != "" ? $field["extra"] : ( highlightString("DEFAULT", HIGHLIGHT_DDL) . " " . ( isset($field["default"]) ? highlightstring("'" . $field["default"] . "'", HIGHLIGHT_VALUES) : ( $field["null"] ? highlightString("NULL", HIGHLIGHT_CONSTANTS) : alternateNullDefault($field["type"]) ) ) ) );
 }
 
 function indexString($idx) {
-    $result = ( $idx["unique"] ? ( $idx["name"] == "PRIMARY" ? highlightString("PRIMARY KEY") : highlightString("UNIQUE") . " " . objectName($idx["name"]) ) : highlightString("INDEX") . " " . objectName($idx["name"]) ) . " (";
+    GLOBAL $options;
+    $backticks = isset($options['type']['backticks']);
+    
+    $result = ( $idx["unique"] ? ( $idx["name"] == "PRIMARY" ? highlightString("PRIMARY KEY") : highlightString("UNIQUE") . " " . fixFieldName($backticks,$idx["name"]) ) : highlightString("INDEX") . " " . fixFieldName($backticks,$idx["name"]) ) . " (";
     $i = 1;
     $im = count($idx["fields"]);
     foreach ($idx["fields"] AS $vf) {
-        $result.=objectName($vf["name"]) . ( isset($vf["sub"]) ? "(" . $vf["sub"] . ")" : "" ) . ( $i < $im ? ", " : "" );
+        $result.=fixFieldName($backticks,$vf["name"]) . ( isset($vf["sub"]) ? "(" . $vf["sub"] . ")" : "" ) . ( $i < $im ? ", " : "" );
         $i++;
     }
     $result.=")";
@@ -115,8 +119,11 @@ function indexString($idx) {
 }
 
 function constraintString($idx, $targetdb, $what = CONSTRAINT_ADD, $serverversion = NULL) {
+    GLOBAL $options;
+    $backticks = isset($options['type']['backticks']);
+    
     if ($what == CONSTRAINT_ADD) {
-        $result = highlightString("ADD CONSTRAINT") . " " . highlightString($idx["type"]) . translate(" (") . $idx["name"] . translate(") ") . highlightString("REFERENCES") . " " . objectName(( $targetdb != $idx["targetdb"] ? $idx["targetdb"] . "." : "" ) . $idx["targettable"]) . translate(" (") . $idx["targetcols"] . translate(")") . ( isset($idx["params"]) && trim($idx["params"]) != "" ? highlightString($idx["params"]) : "" );
+        $result = highlightString("ADD CONSTRAINT") . " " . highlightString($idx["type"]) . translate(" (") . $idx["name"] . translate(") ") . highlightString("REFERENCES") . " " . fixFieldName($backticks,( $targetdb != $idx["targetdb"] ? $idx["targetdb"] . "." : "" ) . $idx["targettable"]) . translate(" (") . $idx["targetcols"] . translate(")") . ( isset($idx["params"]) && trim($idx["params"]) != "" ? highlightString($idx["params"]) : "" );
     } else if ($what == CONSTRAINT_DROP && isset($serverversion) && $serverversion >= 4000013) {
         $result = highlightString("DROP " . $idx["type"]) . " " . $idx["id"];
     } else
@@ -219,46 +226,13 @@ function fieldsDiff($f1, $f2) {
     return FALSE;
 }
 
-function objectName($name) {
-    GLOBAL $options;
-    
-    $reservedwords = array(
-        "ADD", "ACTION", "ALL", "ALTER", "ANALYZE", "AND", "AS", "ASC", "ASENSITIVE", "AUTO_INCREMENT",
-        "BDB", "BEFORE", "BERKELEYDB", "BETWEEN", "BIGINT", "BINARY", "BIT", "BLOB", "BOTH", "BTREE", "BY",
-        "CALL", "CASCADE", "CASE", "CHANGE", "CHAR", "CHARACTER", "CHECK", "COLLATE", "COLUMN", "COLUMNS", "CONNECTION", "CONSTRAINT", "CREATE", "CROSS", "CURRENT_DATE", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURSOR",
-        "DATE", "DATABASE", "DATABASES", "DAY_HOUR", "DAY_MINUTE", "DAY_SECOND", "DEC", "DECIMAL", "DECLARE", "DEFAULT", "DELAYED", "DELETE", "DESC", "DESCRIBE", "DISTINCT", "DISTINCTROW", "DIV", "DOUBLE", "DROP",
-        "ENUM", "ELSE", "ELSEIF", "ENCLOSED", "ERRORS", "ESCAPED", "EXISTS", "EXPLAIN",
-        "FALSE", "FIELDS", "FLOAT", "FOR", "FORCE", "FOREIGN", "FROM", "FULLTEXT",
-        "GRANT", "GROUP",
-        "HASH", "HAVING", "HIGH_PRIORITY", "HOUR_MINUTE", "HOUR_SECOND",
-        "IF", "IGNORE", "IN", "INDEX", "INFILE", "INNER", "INNODB", "INOUT", "INSENSITIVE", "INSERT", "INT", "INTEGER", "INTERVAL", "INTO", "IS", "ITERATE",
-        "JOIN",
-        "KEY", "KEYS", "KILL",
-        "LEADING", "LEAVE", "LEFT", "LIKE", "LIMIT", "LINES", "LOAD", "LOCALTIME", "LOCALTIMESTAMP", "LOCK", "LONG", "LONGBLOB", "LONGTEXT", "LOOP", "LOW_PRIORITY",
-        "MASTER_SERVER_ID", "MATCH", "MEDIUMBLOB", "MEDIUMINT", "MEDIUMTEXT", "MIDDLEINT", "MINUTE_SECOND", "MOD", "MRG_MYISAM",
-        "NATURAL", "NO", "NOT", "NULL", "NUMERIC",
-        "ON", "OPTIMIZE", "OPTION", "OPTIONALLY", "OR", "ORDER", "OUT", "OUTER", "OUTFILE",
-        "PRECISION", "PRIMARY", "PRIVILEGES", "PROCEDURE", "PURGE",
-        "READ", "REAL", "REFERENCES", "REGEXP", "RENAME", "REPEAT", "REPLACE", "REQUIRE", "RESTRICT", "RETURN", "RETURNS", "REVOKE", "RIGHT", "RLIKE", "RTREE",
-        "SELECT", "SENSITIVE", "SEPARATOR", "SET", "SHOW", "SMALLINT", "SOME", "SONAME", "SPATIAL", "SPECIFIC", "SQL_BIG_RESULT", "SQL_CALC_FOUND_ROWS", "SQL_SMALL_RESULT", "SSL", "STARTING", "STRAIGHT_JOIN", "STRIPED",
-        "TABLE", "TABLES", "TERMINATED", "TEXT", "THEN", "TIME", "TIMESTAMP", "TINYBLOB", "TINYINT", "TINYTEXT", "TO", "TRAILING", "TRUE", "TYPES",
-        "UNION", "UNIQUE", "UNLOCK", "UNSIGNED", "UNTIL", "UPDATE", "USAGE", "USE", "USER_RESOURCES", "USING",
-        "VALUES", "VARBINARY", "VARCHAR", "VARCHARACTER", "VARYING",
-        "WARNINGS", "WHEN", "WHERE", "WHILE", "WITH", "WRITE",
-        "XOR",
-        "YEAR_MONTH",
-        "ZEROFILL"
-    );
-
-    return highlightString(isset($options['type']['backticks']) && ( preg_match("/[^a-z0-9]/i", $name) || in_array(strtoupper($name), $reservedwords)) ? "`" . $name . "`" : $name, HIGHLIGHT_OBJECT);
-}
-
 function generateScript($opt,$sel_tables, $targetdb, $sourcedb) {
     GLOBAL $options,$syntaxhighlight, $source_server, $target_server;
 
     $s_id = $sourcedb->getMysqlConnection();
     $t_id = $targetdb->getMysqlConnection();
     $options = $opt;
+    $backticks = isset($options['type']['backticks']);
 
     $syntaxhighlight = $syntax;
     $result_string = "";
@@ -275,7 +249,7 @@ function generateScript($opt,$sel_tables, $targetdb, $sourcedb) {
                     if (is_array($t_tab))
                         foreach ($t_tab AS $key => $value) {
                             if (!isset($s_tab[$key])) {
-                                $item = highlightString("CREATE TABLE") . " " . objectName($key) . " " . translate("(") . "\n";
+                                $item = highlightString("CREATE TABLE") . " " . fixFieldName($backticks,$key) . " " . translate("(") . "\n";
                                 $idx = 1;
                                 $max = count($value["fields"]);
                                 foreach ($value["fields"] AS $vf) {
@@ -324,15 +298,15 @@ function generateScript($opt,$sel_tables, $targetdb, $sourcedb) {
                                     if (!isset($s_tab[$key]["fields"][$vk])) {
                                         if (isset($_SESSION["renamed"][$key]) && in_array($vk, $_SESSION["renamed"][$key])) {
                                             if (!isset($options['type']['altercomments'])) {
-                                                $altering.= ( $altering == "" ? "" : ",\n") . "    " . highlightString("CHANGE") . " " . objectName(array_search($vk, $_SESSION["renamed"][$key])) . " " . fieldString($t_tab[$key]["fields"][$vk]);
+                                                $altering.= ( $altering == "" ? "" : ",\n") . "    " . highlightString("CHANGE") . " " . fixFieldName($backticks,array_search($vk, $_SESSION["renamed"][$key])) . " " . fieldString($t_tab[$key]["fields"][$vk]);
                                             } else
-                                                $result_string .= highlightString("ALTER TABLE") . " " . objectName($key) . " " . highlightString("CHANGE") . " " . objectName($vk) . " " . fieldString($t_tab[$key]["fields"][$vk]) . ";\n";
+                                                $result_string .= highlightString("ALTER TABLE") . " " . fixFieldName($backticks,$key) . " " . highlightString("CHANGE") . " " . fixFieldName($backticks,$vk) . " " . fieldString($t_tab[$key]["fields"][$vk]) . ";\n";
                                         } else {
                                             $added_fields[$key][] = $vk;
                                             if (!isset($options['type']['altercomments'])) {
                                                 $altering.= ( $altering == "" ? "" : translate(",") . "\n") . "    " . highlightString("ADD") . " " . fieldString($t_tab[$key]["fields"][$vk]) . ( isset($lastfield) ? " " . highlightString("AFTER") . " $lastfield" : " " . highlightString("FIRST") );
                                             } else
-                                                $result_string .= highlightString("ALTER TABLE") . " " . objectName($key) . " " . highlightString("ADD") . " " . fieldString($t_tab[$key]["fields"][$vk]) . ( isset($lastfield) ? " " . highlightString("AFTER") . " $lastfield" : " " . highlightString("FIRST") ) . translate(";") . "\n";
+                                                $result_string .= highlightString("ALTER TABLE") . " " . fixFieldName($backticks,$key) . " " . highlightString("ADD") . " " . fieldString($t_tab[$key]["fields"][$vk]) . ( isset($lastfield) ? " " . highlightString("AFTER") . " $lastfield" : " " . highlightString("FIRST") ) . translate(";") . "\n";
                                         }
                                         $altered++;
                                     }
@@ -343,10 +317,10 @@ function generateScript($opt,$sel_tables, $targetdb, $sourcedb) {
                                     if (isset($t_tab[$key]["fields"][$vk])) {
                                         if ($vf["type"] == $t_tab[$key]["fields"][$vk]["type"] && $vf["null"] == $t_tab[$key]["fields"][$vk]["null"] && $vf["default"] != $t_tab[$key]["fields"][$vk]["default"]) {
                                             if (!isset($options['type']['altercomments'])) {
-                                                $altering.= ( $altering == "" ? "" : ",\n") . "    " . highlightString("ALTER") . " " . objectName($t_tab[$key]["fields"][$vk]["name"]) . " " . ( isset($t_tab[$key]["fields"][$vk]["default"]) ? highlightString("SET DEFAULT") . " " . ( is_numeric($t_tab[$key]["fields"][$vk]["default"]) ? $t_tab[$key]["fields"][$vk]["default"] : "'" . $t_tab[$key]["fields"][$vk]["default"] . "'" ) : " " . highlightString("DROP DEFAULT") );
+                                                $altering.= ( $altering == "" ? "" : ",\n") . "    " . highlightString("ALTER") . " " . fixFieldName($backticks,$t_tab[$key]["fields"][$vk]["name"]) . " " . ( isset($t_tab[$key]["fields"][$vk]["default"]) ? highlightString("SET DEFAULT") . " " . ( is_numeric($t_tab[$key]["fields"][$vk]["default"]) ? $t_tab[$key]["fields"][$vk]["default"] : "'" . $t_tab[$key]["fields"][$vk]["default"] . "'" ) : " " . highlightString("DROP DEFAULT") );
                                                 $alterfields[] = array("name" => $key . "." . $t_tab[$key]["fields"][$vk]["name"], "from" => fieldString($s_tab[$key]["fields"][$vk], FALSE), "to" => fieldString($t_tab[$key]["fields"][$vk], FALSE));
                                             } else {
-                                                $result_string .= highlightString("ALTER TABLE") . " " . objectName($key) . " " . highlightString("ALTER") . " " . objectName($t_tab[$key]["fields"][$vk]["name"]) . " " . ( isset($t_tab[$key]["fields"][$vk]["default"]) ? highlightString("SET DEFAULT") . " " . ( is_numeric($t_tab[$key]["fields"][$vk]["default"]) ? $t_tab[$key]["fields"][$vk]["default"] : "'" . $t_tab[$key]["fields"][$vk]["default"] . "'" ) : " " . highlight("DROP DEFAULT") );
+                                                $result_string .= highlightString("ALTER TABLE") . " " . fixFieldName($backticks,$key) . " " . highlightString("ALTER") . " " . fixFieldName($backticks,$t_tab[$key]["fields"][$vk]["name"]) . " " . ( isset($t_tab[$key]["fields"][$vk]["default"]) ? highlightString("SET DEFAULT") . " " . ( is_numeric($t_tab[$key]["fields"][$vk]["default"]) ? $t_tab[$key]["fields"][$vk]["default"] : "'" . $t_tab[$key]["fields"][$vk]["default"] . "'" ) : " " . highlight("DROP DEFAULT") );
                                                 $result_string .= "#\n#  Fieldformat of '$key.$vk' changed from '" . fieldString($s_tab[$key]["fields"][$vk], FALSE) . " to " . fieldString($t_tab[$key]["fields"][$vk], FALSE) . ". Possibly data modifications needed!\n#\n\n";
                                             }
                                         } else if ($vf["type"] != $t_tab[$key]["fields"][$vk]["type"] || $vf["null"] != $t_tab[$key]["fields"][$vk]["null"] || $vf["default"] != $t_tab[$key]["fields"][$vk]["default"]) {
@@ -354,7 +328,7 @@ function generateScript($opt,$sel_tables, $targetdb, $sourcedb) {
                                                 $altering.= ( $altering == "" ? "" : ",\n") . "    " . highlightString("MODIFY") . " " . fieldString($t_tab[$key]["fields"][$vk]);
                                                 $alteredfields[] = array("name" => $key . "." . $t_tab[$key]["fields"][$vk]["name"], "from" => fieldString($s_tab[$key]["fields"][$vk], FALSE), "to" => fieldString($t_tab[$key]["fields"][$vk], FALSE));
                                             } else {
-                                                $result_string .= highlightString("ALTER TABLE") . " " . objectName($key) . " " . highlightString("MODIFY") . " " . fieldString($t_tab[$key]["fields"][$vk]) . ";\n";
+                                                $result_string .= highlightString("ALTER TABLE") . " " . fixFieldName($backticks,$key) . " " . highlightString("MODIFY") . " " . fieldString($t_tab[$key]["fields"][$vk]) . ";\n";
                                                 $result_string .= "#\n#  Fieldformat of '$key.$vk' changed from '" . fieldString($s_tab[$key]["fields"][$vk], FALSE) . " to " . fieldString($t_tab[$key]["fields"][$vk], FALSE) . ". Possibly data modifications needed!\n#\n\n";
                                             }
                                             $altered++;
@@ -366,9 +340,9 @@ function generateScript($opt,$sel_tables, $targetdb, $sourcedb) {
                                                 $addedfieldnames .= ( $addedfieldnames == "" ? "" : "&" ) . "fields[]=" . urlencode($addfld);
                                             }
                                             if (!isset($options['type']['altercomments'])) {
-                                                $altering.= ( $altering == "" ? "" : translate(",") . "\n") . "    " . highlightString("DROP") . " " . objectName($vk);
+                                                $altering.= ( $altering == "" ? "" : translate(",") . "\n") . "    " . highlightString("DROP") . " " . fixFieldName($backticks,$vk);
                                             } else
-                                                $result_string .= highlightString("ALTER TABLE") . " " . objectName($key) . " " . highlightString("DROP") . " " . objectName($vk) . translate(";") . "\n";
+                                                $result_string .= highlightString("ALTER TABLE") . " " . fixFieldName($backticks,$key) . " " . highlightString("DROP") . " " . fixFieldName($backticks,$vk) . translate(";") . "\n";
                                         }
                                         $altered++;
                                     }
@@ -380,7 +354,7 @@ function generateScript($opt,$sel_tables, $targetdb, $sourcedb) {
                                             if (!isset($options['type']['altercomments'])) {
                                                 $altering.= ( $altering == "" ? "" : translate(",") . "\n") . "    " . highlightString("ADD") . " " . indexString($vf);
                                             } else
-                                                $result_string .= highlightString("ALTER TABLE") . " " . objectName($key) . " " . highlightString("ADD") . " " . indexString($vf) . translate(";") . "\n";
+                                                $result_string .= highlightString("ALTER TABLE") . " " . fixFieldName($backticks,$key) . " " . highlightString("ADD") . " " . indexString($vf) . translate(";") . "\n";
                                             $altered++;
                                         }
                                     }
@@ -392,13 +366,13 @@ function generateScript($opt,$sel_tables, $targetdb, $sourcedb) {
                                                 if (!isset($options['type']['altercomments'])) {
                                                     $altering.= ( $altering == "" ? "" : translate(",") . "\n") . "    " . highlightString("DROP") . " " . ( $vf["unique"] && $vk == "PRIMARY" ? highlightString("PRIMARY KEY") : highlightString("INDEX") . " $vk" ) . translate(",") . "\n    " . highlightString("ADD") . " " . indexString($t_tab[$key]["idx"][$vk]);
                                                 } else
-                                                    $result_string .= highlightString("ALTER TABLE") . " " . objectName($key) . " " . highlightString("DROP") . " " . ( $vf["unique"] && $vk == "PRIMARY" ? highlightString("PRIMARY KEY") : highlightString("INDEX") . " $vk" ) . translate(";\n") . highlightString("ALTER TABLE") . " $key " . highlightString("ADD") . " " . indexString($t_tab[$key]["idx"][$vk]) . translate(";") . "\n";
+                                                    $result_string .= highlightString("ALTER TABLE") . " " . fixFieldName($backticks,$key) . " " . highlightString("DROP") . " " . ( $vf["unique"] && $vk == "PRIMARY" ? highlightString("PRIMARY KEY") : highlightString("INDEX") . " $vk" ) . translate(";\n") . highlightString("ALTER TABLE") . " $key " . highlightString("ADD") . " " . indexString($t_tab[$key]["idx"][$vk]) . translate(";") . "\n";
                                             }
                                         } else {
                                             if (!isset($options['type']['altercomments'])) {
                                                 $altering.= ( $altering == "" ? "" : translate(",") . "\n") . "    " . highlightString("DROP") . " " . ( $vf["unique"] && $vk == "PRIMARY" ? highlightString("PRIMARY KEY") : highlightString("INDEX") . " $vk" );
                                             } else
-                                                $result_string .= highlightString("ALTER TABLE") . " " . objectName($key) . " " . highlightString("DROP") . " " . ( $vf["unique"] && $vk == "PRIMARY" ? highlightString("PRIMARY KEY") : highlightString("INDEX") . " $vk" ) . translate(";") . "\n";
+                                                $result_string .= highlightString("ALTER TABLE") . " " . fixFieldName($backticks,$key) . " " . highlightString("DROP") . " " . ( $vf["unique"] && $vk == "PRIMARY" ? highlightString("PRIMARY KEY") : highlightString("INDEX") . " $vk" ) . translate(";") . "\n";
                                             $altered++;
                                         }
                                     }
@@ -410,7 +384,7 @@ function generateScript($opt,$sel_tables, $targetdb, $sourcedb) {
                                             if (!isset($options['type']['altercomments'])) {
                                                 $altering.= ( $altering == "" ? "" : translate(",") . "\n") . "    " . constraintString($vf, $targetdb->name, CONSTRAINT_DROP, $target_server);
                                             } else
-                                                $result_string .= highlightString("ALTER TABLE") . " " . objectName($key) . " " . constraintString($vf, $targetdb->name, CONSTRAINT_DROP, $target_server) . translate(";") . "\n";
+                                                $result_string .= highlightString("ALTER TABLE") . " " . fixFieldName($backticks,$key) . " " . constraintString($vf, $targetdb->name, CONSTRAINT_DROP, $target_server) . translate(";") . "\n";
                                             $altered++;
                                         }
                                     }
@@ -420,7 +394,7 @@ function generateScript($opt,$sel_tables, $targetdb, $sourcedb) {
                                             if (!isset($options['type']['altercomments'])) {
                                                 $altering.= ( $altering == "" ? "" : translate(",") . "\n") . "    " . constraintString($vf, $targetdb->name, CONSTRAINT_ADD);
                                             } else
-                                                $result_string .= highlightString("ALTER TABLE") . " " . objectName($key) . " " . constraintString($vf, $targetdb->name, CONSTRAINT_ADD) . translate(";") . "\n";
+                                                $result_string .= highlightString("ALTER TABLE") . " " . fixFieldName($backticks,$key) . " " . constraintString($vf, $targetdb->name, CONSTRAINT_ADD) . translate(";") . "\n";
                                             $altered++;
                                         }
                                     }
@@ -431,7 +405,7 @@ function generateScript($opt,$sel_tables, $targetdb, $sourcedb) {
                                         if (!isset($options['type']['altercomments'])) {
                                             $altering.= ( $altering == "" ? "" : translate(",") . "\n") . "    " . highlightString("TYPE") . highlightstring("=", HIGHLIGHT_SIGNS) . highlightstring($t_tab[$key]["type"], HIGHLIGHT_CONSTANTS);
                                         } else
-                                            $result_string .= highlightString("ALTER TABLE") . " " . objectName($key) . " " . highlighString("TYPE") . highlightstring("=", HIGHLIGHT_SIGNS) . highlightstring($t_tab[$key]["type"], HIGHLIGHT_CONSTANTS) . translate(";") . "\n";
+                                            $result_string .= highlightString("ALTER TABLE") . " " . fixFieldName($backticks,$key) . " " . highlighString("TYPE") . highlightstring("=", HIGHLIGHT_SIGNS) . highlightstring($t_tab[$key]["type"], HIGHLIGHT_CONSTANTS) . translate(";") . "\n";
                                         $altered++;
                                     }
                                 }
@@ -441,7 +415,7 @@ function generateScript($opt,$sel_tables, $targetdb, $sourcedb) {
                                         if (!isset($options['type']['altercomments'])) {
                                             $altering.= ( $altering == "" ? "" : translate(",") . "\n") . "    " . $t_tab[$key]["options"];
                                         } else
-                                            $result_string .= highlightString("ALTER TABLE") . " " . objectName($key) . " " . highlightString($t_tab[$key]["options"], HIGHLIGHT_VALUES) . translate(";") . "\n";
+                                            $result_string .= highlightString("ALTER TABLE") . " " . fixFieldName($backticks,$key) . " " . highlightString($t_tab[$key]["options"], HIGHLIGHT_VALUES) . translate(";") . "\n";
                                         $altered++;
                                     }
                                 }
@@ -451,14 +425,14 @@ function generateScript($opt,$sel_tables, $targetdb, $sourcedb) {
                                         if (!isset($options['type']['altercomments'])) {
                                             $altering.= ( $altering == "" ? "" : translate(",") . "\n") . "    " . highlightString("COMMENT") . highlightstring("=", HIGHLIGHT_SIGNS) . "'" . ( function_exists("mysql_escape_string") ? mysql_escape_string($t_tab[$key]["comment"]) : addslashes($t_tab[$key]["comment"]) ) . translate("'");
                                         } else
-                                            $result_string .= highlightString("ALTER TABLE") . " " . objectName($key) . " " . highlightString("COMMENT") . highlightstring("=", HIGHLIGHT_SIGNS) . "'" . ( function_exists("mysql_escape_string") ? mysql_escape_string($t_tab[$key]["comment"]) : addslashes($t_tab[$key]["comment"]) ) . translate("';") . "\n";
+                                            $result_string .= highlightString("ALTER TABLE") . " " . fixFieldName($backticks,$key) . " " . highlightString("COMMENT") . highlightstring("=", HIGHLIGHT_SIGNS) . "'" . ( function_exists("mysql_escape_string") ? mysql_escape_string($t_tab[$key]["comment"]) : addslashes($t_tab[$key]["comment"]) ) . translate("';") . "\n";
                                         $altered++;
                                     }
                                 }
 
                                 // Abschluss ...
                                 if ($altering != "") {
-                                    $result_string .= highlightString("ALTER TABLE") . " " . objectName($key) . "\n$altering;\n";
+                                    $result_string .= highlightString("ALTER TABLE") . " " . fixFieldName($backticks,$key) . "\n$altering;\n";
                                     if (isset($alteredfields)) {
                                         $result_string .= "#\n";
                                         $result_string .= "#  " . ( count($alteredfields) == 1 ? "Fieldformat of" : "Fieldformats of" ) . "\n";
@@ -471,7 +445,7 @@ function generateScript($opt,$sel_tables, $targetdb, $sourcedb) {
                                 } else if ($altered)
                                     $result_string .= "\n";
                             } else {
-                                $result_string .= highlightString("DROP TABLE") . " " . objectName($key) . translate(";") . "\n\n";
+                                $result_string .= highlightString("DROP TABLE") . " " . fixFieldName($backticks,$key) . translate(";") . "\n\n";
                             }
                         }
                 } else
