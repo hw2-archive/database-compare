@@ -72,18 +72,18 @@ class UpdateFile {
         $keyvalues = array();
         $query = "";
         $diffType = $row->getDiffs();
-        $backticks = $this->options['type']['backticks'];
+        $backticks = array( "table" => isset($this->options['type']['backticks_table']) , "field" => isset($this->options['type']['backticks_attribute']),  "filter" => isset($this->options['type']['backticks_filter']));
 
         // actually we can't collect updates, to implement checking by column
         if ($diffType[0] instanceof MyDiff_Diff_Table_Row_Value) {
-            $this->qCollection["update"][] = "UPDATE " . fixFieldName($backticks, $tableName) . " SET ";
+            $this->qCollection["update"][] = "UPDATE " . fixTableName($tableName,$backticks['table'],$backticks['filter']) . " SET ";
             // INSERT VALUES PREFIX
         } else if ($diffType[0] instanceof MyDiff_Diff_Table_Row_New) {
             ++$this->cIns;
             if ($this->cIns > 1):
                 $this->qCollection["insert"][] = ",\n";
             else:
-                $insertPrefix = "INSERT INTO " . fixFieldName($backticks, $tableName) . " (";
+                $insertPrefix = "INSERT INTO " . fixTableName($tableName,$backticks['table'],$backticks['filter']) . " (";
                 $first = true;
                 reset($row->data);
                 while (list($columnName, $data) = each($row->data)) {
@@ -93,7 +93,7 @@ class UpdateFile {
                         $first = false;
                     }
 
-                    $insertPrefix .= $columnName;
+                    $insertPrefix .= fixFieldName($columnName,$backticks['field'],$backticks['filter']);
                 }
                 $insertPrefix .= ") VALUES \n";
 
@@ -105,9 +105,9 @@ class UpdateFile {
         } else if ($diffType[0] instanceof MyDiff_Diff_Table_Row_Missing) {
             if ($keycnt == 1) {
                 if ($this->cDel == 0)
-                    $this->qCollection["delete"][] = "DELETE FROM " . fixFieldName($backticks, $tableName) . " WHERE " . $pColumns[1] . " IN (\n";
+                    $this->qCollection["delete"][] = "DELETE FROM " . fixTableName($tableName,$backticks['table'],$backticks['filter']) . " WHERE " . $pColumns[1] . " IN (\n";
             } else {
-                $this->qCollection["delete"][] = "DELETE FROM " . fixFieldName($backticks, $tableName) . " WHERE ";
+                $this->qCollection["delete"][] = "DELETE FROM " . fixTableName($tableName,$backticks['table'],$backticks['filter']) . " WHERE ";
             }
             ++$this->cDel;
         }
@@ -131,10 +131,11 @@ class UpdateFile {
                     $query .= ", ";
                 endif;
 
+                $attribute = fixFieldName($columnName,$backticks['field'],$backticks['filter']);
                 if ($diff->compare != null && $diff->compare != "") {
-                    $query .= $columnName . "='" . fixMysqlString($diff->compare, $this->t_id) . "'";
+                    $query .= $attribute . "='" . fixMysqlString($diff->compare, $this->t_id) . "'";
                 } else {
-                    $query .= $columnName . (is_string($diff->compare) ? "=''" : "=(NULL)");
+                    $query .= $attribute . (is_string($diff->compare) ? "=''" : "=(NULL)");
                 }
 
             else:
@@ -153,10 +154,11 @@ class UpdateFile {
                             $query .= " AND ";
                         endif;
 
+                        $attribute = fixFieldName($columnName,$backticks['field'],$backticks['filter']);
                         if ($data != null && $data != "") {
-                            $query .= $columnName . "='" . fixMysqlString($data, $this->t_id) . "'";
+                            $query .= $attribute . "='" . fixMysqlString($data, $this->t_id) . "'";
                         } else {
-                            $query .= $columnName . (is_string($data) ? "=''" : " IS NULL");
+                            $query .= $attribute . (is_string($data) ? "=''" : " IS NULL");
                         }
 
 

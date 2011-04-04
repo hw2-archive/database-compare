@@ -58,7 +58,15 @@ function fixMysqlString($string, &$link) {
     endif;
 }
 
-function fixFieldName($backticks,$name,$skipReserved = false) {
+function fixTableName($name,$backticks = false, $addFilters = false) {
+    return fixObjectName($name, $backticks, $addFilters);
+}
+
+function fixFieldName($name,$backticks = false, $addFilters = false) {
+    return fixObjectName($name, $backticks, $addFilters);
+}
+
+function fixObjectName($name,$backticks = false,$addFilters = false) {
 
     $reservedwords = array(
         "ADD", "ACTION", "ALL", "ALTER", "ANALYZE", "AND", "AS", "ASC", "ASENSITIVE", "AUTO_INCREMENT",
@@ -88,7 +96,7 @@ function fixFieldName($backticks,$name,$skipReserved = false) {
         "ZEROFILL"
     );
 
-    return ($backticks && ( preg_match("/[^a-z0-9]/i", $name) || (!$skipReserved && in_array(strtoupper($name), $reservedwords))) ? "`" . $name . "`" : $name);
+    return ($backticks && ($addFilters && ( preg_match("/[^a-z0-9]/i", $name) || in_array(strtoupper($name), $reservedwords))) ? "`" . $name . "`" : $name);
 }
 
 ?>
