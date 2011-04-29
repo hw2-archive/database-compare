@@ -101,7 +101,11 @@ function alternateNullDefault($type) {
 
 function fieldString($field, $withname=TRUE) {
     GLOBAL $backticks;
-    return ( $withname ? fixFieldName($field["name"],$backticks['field'],$backticks['filter']) . " " : "" ) . typeString($field["type"]) . ( $field["null"] ? " " . highlightString("NULL", HIGHLIGHT_CONSTANTS) : " " . highlightString("NOT NULL", HIGHLIGHT_CONSTANTS) ) . " " . ( isset($field["extra"]) && $field["extra"] != "" ? $field["extra"] : ( highlightString("DEFAULT", HIGHLIGHT_DDL) . " " . ( isset($field["default"]) ? highlightstring("'" . $field["default"] . "'", HIGHLIGHT_VALUES) : ( $field["null"] ? highlightString("NULL", HIGHLIGHT_CONSTANTS) : alternateNullDefault($field["type"]) ) ) ) );
+    $string = ( $withname ? fixFieldName($field["name"],$backticks['field'],$backticks['filter']) . " " : "" ) .typeString($field["type"]) ;
+    $string .= ( $field["null"] ? " " . highlightString("NULL", HIGHLIGHT_CONSTANTS) : " " . highlightString("NOT NULL", HIGHLIGHT_CONSTANTS) ) . " ";
+    $string .= ( isset($field["extra"]) && $field["extra"] != "" ? $field["extra"] : ( isset($field["default"]) ? highlightString("DEFAULT", HIGHLIGHT_DDL) : "") . " " .( isset($field["default"]) ? highlightstring("'" . $field["default"] . "'", HIGHLIGHT_VALUES) : ( $field["null"] ? highlightString("NULL", HIGHLIGHT_CONSTANTS) : alternateNullDefault($field["type"]) ) ) );
+    return $string;
+
 }
 
 function indexString($idx) {

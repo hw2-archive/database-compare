@@ -69,7 +69,7 @@ function fixFieldName($name,$backticks = false, $addFilters = false) {
 function fixObjectName($name,$backticks = false,$addFilters = false) {
 
     $reservedwords = array(
-        "ADD", "ACTION", "ALL", "ALTER", "ANALYZE", "AND", "AS", "ASC", "ASENSITIVE", "AUTO_INCREMENT",
+        "ACCESS" , "ADD", "ACTION", "ALL", "ALTER", "ANALYZE", "AND", "AS", "ASC", "ASENSITIVE", "AUTO_INCREMENT",
         "BDB", "BEFORE", "BERKELEYDB", "BETWEEN", "BIGINT", "BINARY", "BIT", "BLOB", "BOTH", "BTREE", "BY",
         "CALL", "CASCADE", "CASE", "CHANGE", "CHAR", "CHARACTER", "CHECK", "COLLATE", "COLUMN", "COLUMNS", "CONNECTION", "CONSTRAINT", "CREATE", "CROSS", "CURRENT_DATE", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURSOR",
         "DATE", "DATABASE", "DATABASES", "DAY_HOUR", "DAY_MINUTE", "DAY_SECOND", "DEC", "DECIMAL", "DECLARE", "DEFAULT", "DELAYED", "DELETE", "DESC", "DESCRIBE", "DISTINCT", "DISTINCTROW", "DIV", "DOUBLE", "DROP",
@@ -96,7 +96,7 @@ function fixObjectName($name,$backticks = false,$addFilters = false) {
         "ZEROFILL"
     );
 
-    return ($backticks && ($addFilters && ( preg_match("/[^a-z0-9]/i", $name) || in_array(strtoupper($name), $reservedwords))) ? "`" . $name . "`" : $name);
+    return ($backticks && !$addFilters || $backticks && ($addFilters && ( preg_match("/[^a-z0-9]/i", $name) || in_array(strtoupper($name), $reservedwords))) ? "`" . $name . "`" : $name);
 }
 
 ?>

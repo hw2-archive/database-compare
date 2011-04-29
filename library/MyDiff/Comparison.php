@@ -190,17 +190,17 @@ class MyDiff_Comparison {
         $colCnt = array("ID" => 0, "PK" => 0, "CL" => 0, "TOT" => 0);
         foreach ($columns AS $column) {
             if ($column->metadata['IDENTITY']) {
-                $IDs .= ( $colCnt["ID"] > 0 ? "," : "") . $column->name;
+                $IDs .= ( $colCnt["ID"] > 0 ? "," : "") . fixFieldName($column->name,true,true);
                 ++$colCnt["ID"];
             } else if ($column->metadata['PRIMARY']) {
-                $pKeys .= ( $colCnt["PK"] > 0 ? "," : "") . $column->name;
+                $pKeys .= ( $colCnt["PK"] > 0 ? "," : "") . fixFieldName($column->name,true,true);
                 ++$colCnt["PK"];
             } else {
-                $fields .= ( $colCnt["CL"] > 0 ? "," : "") . $column->name;
+                $fields .= ( $colCnt["CL"] > 0 ? "," : "") . fixFieldName($column->name,true,true);
                 ++$colCnt["CL"];
             }
 
-            $selFields .= ( $colCnt["TOT"] > 0 ? "," : "") . $column->name;
+            $selFields .= ( $colCnt["TOT"] > 0 ? "," : "") . fixFieldName($column->name,true,true);
             ++$colCnt["TOT"];
         }
 
