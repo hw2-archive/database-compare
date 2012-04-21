@@ -166,7 +166,7 @@ class MyDiff_Comparison {
                 $upFile->createQuery($cRow, $pColumns, $keycnt, $tableName);
 
                 if ($showChanges) {
-                    $tables[1][$tableName]->addRow(&$cRow);
+                    $tables[1][$tableName]->addRow($cRow);
                 }
             }
 
@@ -228,7 +228,7 @@ class MyDiff_Comparison {
                 $sql .= $pKeys;
             }
         }
-
+        
         $result = mysql_query($sql, $this->databases[0]->getMysqlConnection());
         if (!$result) {
             return false;

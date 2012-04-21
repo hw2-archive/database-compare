@@ -21,7 +21,7 @@
   
   <?php
   if (file_exists($this->options['type']['filename'])):
-	?> <p><h1> Sql file create in:</h1> <a href="<?php echo realpath($this->options['type']['filename']) ?>"><?php echo realpath($this->options['type']['filename'])?> </a> </p>	<?php
+	?> <p><h1> Sql file create in:</h1> <a href="<?php echo ROOT_PATH."/".$this->options['type']['filename'] ?>"><?php echo ROOT_PATH."/".$this->options['type']['filename']?> </a> </p>	<?php
   else:
 	echo "No file created";
   endif;
