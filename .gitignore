@@ -1,6 +1,31 @@
+#
+# OS specific
+#
+# MacOS
+.DS_Store
 
-/updatepack.sql
-nbproject
+#
+# Editors / debuggers / other output files
+#
+*~
+*.bak
+*.orig
+*.patch
+callgrind.out.*
+
+#
+# Git stuff
+#
+# stgit directories
+patches-*
+
+Thumbs.db
+Thumbs.db:encryptable
+
+
+updatepack.sql
+nbproject/private/*
+.settings/*
 cache/*
 sql/*
 !cache/index.html
