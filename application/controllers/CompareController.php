@@ -57,23 +57,33 @@ class CompareController extends Zend_Controller_Action {
             $database->useTables(array_keys($options['database'][$i]['table']));
             $database->connect();
         }
+        
+        if (!is_numeric($options['type']['srcdb'])) {
+            return false; // can't happen
+        }
+        // Select source db
+        $dbcnt=count($comparison->databases);
+        $comparison->sourcedb = $comparison->databases[$options['type']['srcdb']];
+        for ($i=0;$i<$dbcnt;$i++) // for multiple target db next implementation
+            if ($i != $options['type']['srcdb'])
+                $comparison->targetdb = $comparison->databases[$i];
 
         $upFile = new UpdateFile($comparison,$options);
         // Do compare types
         if (isset($options['type']['schema'])) {
-            $comparison->schema();
+            $comparison->schema($comparison->targetdb,$comparison->sourcedb);
             $upFile->writeSchema();
         }
 
         if (isset($options['type']['data'])) {
             $showChanges = isset($options['type']['showchanges']);
 
-            $comparison->data(isset($options['type']['replace']), $options['type']['algorithm'], $upFile, $showChanges);
+            $comparison->data(isset($options['type']['replace']), $options['type']['algorithm'], $upFile, $showChanges,$comparison->targetdb,$comparison->sourcedb);
 
             if ($showChanges) {
                 // Build a list of rows that have changed
                 $data = array();
-                $tables = array($comparison->databases[0]->getTables(), $comparison->databases[1]->getTables());
+                $tables = array($comparison->targetdb->getTables(), $comparison->sourcedb->getTables());
                 foreach ($tables[0] AS $tableName => $table) {
                     if (!$table->hasDiffs('MyDiff_Diff_Table_New')) {
                         $rows = array($tables[0][$tableName]->getRows(), (isset($tables[1][$tableName]) ? $tables[1][$tableName]->getRows() : array()));

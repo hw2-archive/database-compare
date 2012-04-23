@@ -23,17 +23,38 @@
 
             <h1>Compare</h1>
             <fieldset>
-                <input type="checkbox" name="options[type][schema]" value="1" checked="checked" />
-                <label class="right" for="options[type][schema]">Schema</label>
-            </fieldset>
-            <fieldset>
-                <input type="checkbox" name="options[type][data]" value="1" checked="checked" />
-                <label class="right" for="options[type][data]">Data</label>
+            <table class="screen" cellspacing="0">
+            <tr>
+                    <td><select name="options[type][srcdb]">
+                        <?php 
+                        $cnt=0;
+                        foreach ($this->comparison->databases AS $dbI => $database): 
+                        ?>
+                            <option value="<?php echo $cnt ?>"><?php echo $database->name; ?></option>
+                        <?php 
+                        $cnt++;
+                        endforeach; 
+                        ?>
+                    </select> </td>
+                    <td>&nbsp;</td>
+            <td><label for="options[type][srcdb]"><b>Select the source db, other will be target databases to update with datas and schemas from the source</b> </label></td>
+             </tr>
+            <tr>
+                <td><input type="checkbox" name="options[type][schema]" value="1" checked="checked" /></td>
+                <td>&nbsp;</td>
+                <td><label class="right" for="options[type][schema]"><b>Compare Schema</b></label></td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" name="options[type][data]" value="1" checked="checked" /></td>
+                <td>&nbsp;</td>
+                <td><label class="right" for="options[type][data]"><b>Compare Data</b></label></td>
+            </tr>
+                </table>
             </fieldset>
 
             <input name="sc" type="hidden" value="<?php echo $_GET["sc"]; ?>" />
 
-
+            <fieldset>
             <table class="screen" cellspacing="0">
                 <colgroup>
                     <col width="100" />
@@ -98,7 +119,7 @@
                 <tr>
                     <td><input type="checkbox" name="options[type][showchanges]" value="1"/></td>
                     <td>&nbsp;</td>
-                    <td><label for="options[type][showchanges]"><b>Show all schema/data changes in your browser (it could take lot of memory with very big databases )</b></label></td>
+                    <td><label for="options[type][showchanges]"><b>Show all schema/data changes in your browser (it could take lot of memory with huge databases )</b></label></td>
                 </tr>
                 <tr>
                     <td><input type="checkbox" name="options[type][allfields]" value="1" /></td>
@@ -116,10 +137,11 @@
                             <option value="fullarray">Array Diff</option>
                         </select> </td>
                     <td>&nbsp;</td>
-                    <td><label for="options[type][algorithm]"><b>Choose the algorithm you want to use to compare tables , Group By is very fast , but both databases must be in same host, using Array instead can be slow , but works also db with different hosts</b> </label></td>
+                    <td><label for="options[type][algorithm]"><b>Choose the algorithm you want to use to compare tables , Group By is very fast , but both databases must be in same host, using Array instead can be slow , but works also using db with different hosts</b> </label></td>
                 </tr>
             </table>
             <br />
+            </fieldset>
 
             <h1>Tables</h1>
             <?php foreach ($this->comparison->databases AS $dbI => $database): ?>

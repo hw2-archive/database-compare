@@ -3,6 +3,7 @@
 class MyDiff_Comparison {
 
     public $databases = array();
+    public $sourcedb,$targetdb;
 
     public function addDatabase(MyDiff_Database $database) {
         if (count($this->databases) >= 2)
@@ -14,11 +15,11 @@ class MyDiff_Comparison {
     /**
      * Perform a schema comparison on provided databases
      */
-    public function schema() {
+    public function schema($targetdb,$sourcedb) {
         $this->isReady();
 
         // Grab list of tables for each database
-        $tables = array($this->databases[0]->getTables(), $this->databases[1]->getTables());
+        $tables = array($targetdb->getTables(), $sourcedb->getTables());
 
         // Look for differences in number of tables
         $this->doTableDiff($tables);
@@ -97,15 +98,15 @@ class MyDiff_Comparison {
     /**
      * Perform a schema comparison on provided databases
      */
-    public function data($isReplace, $algorithm, $upFile, $showChanges) {
+    public function data($isReplace, $algorithm, $upFile, $showChanges,$targetdb,$sourcedb) {
         $this->isReady();
 
         // Grab list of tables for each database
-        $tables = array($this->databases[0]->getTables(), $this->databases[1]->getTables());
+        $tables = array($targetdb->getTables(), $sourcedb->getTables());
 
         // Grab tables that are in both
-        $matchingTables = array_intersect(array_keys($tables[0]), array_keys($tables[1])); // source - target
-        $matchingNewTables = array_diff(array_keys($tables[1]), array_keys($tables[0])); // target - source
+        $matchingTables = array_intersect(array_keys($tables[0]), array_keys($tables[1])); // target - source
+        $matchingNewTables = array_diff(array_keys($tables[1]), array_keys($tables[0])); // source - target
 
         $bar = new ProgressBar('Comparing different table data and fill new tables..', true, 0, 400, 40, "#cccccc", "blue", "cdata");
         $bar->initialize(count($matchingTables) + count($matchingNewTables)); // total number of tables
@@ -113,10 +114,10 @@ class MyDiff_Comparison {
         foreach ($matchingTables AS $tableName) {
 
             if ($algorithm == "groupby") {
-                if ($this->databases[0]->server != $this->databases[1]->server)
-                    die('Actually Cannot execute group by algorithm on different hosts: ' . $this->databases[0]->server . ' - ' . $this->databases[1]->server);
+                if ($targetdb->server != $sourcedb->server)
+                    die('Actually Cannot execute group by algorithm on different hosts: ' . $targetdb->server . ' - ' . $this->sourcedb->server);
 
-                $this->groupByMethod($tables, $tableName, $isReplace, $upFile, $showChanges);
+                $this->groupByMethod($tables, $tableName, $isReplace, $upFile, $showChanges,$targetdb,$sourcedb);
             } else {
                 //processing use only array
 
@@ -179,7 +180,7 @@ class MyDiff_Comparison {
         unset($bar, $tables, $tableNames, $matchingTables);
     }
 
-    public function groupByMethod(&$tables, $tableName, $isReplace, $upFile, $showChanges) {
+    public function groupByMethod(&$tables, $tableName, $isReplace, $upFile, $showChanges,$targetdb,$sourcedb) {
         $fields = "";
         $pKeys = "";
         $IDs = "";
@@ -209,10 +210,10 @@ class MyDiff_Comparison {
                 FROM
                  (
                   SELECT 'source_table' AS tbl_name , " . $selFields . "
-                  FROM " . $this->databases[0]->name . "." . $tableName . " AS S
+                  FROM " . $targetdb->name . "." . $tableName . " AS S
                   UNION ALL
                   SELECT 'target_table' AS tbl_name , " . $selFields . "
-                  FROM " . $this->databases[1]->name . "." . $tableName . " AS D
+                  FROM " . $sourcedb->name . "." . $tableName . " AS D
                 )  AS alias_table
                  GROUP BY " . $selFields . "
                  HAVING COUNT(*)=1";
@@ -229,7 +230,7 @@ class MyDiff_Comparison {
             }
         }
         
-        $result = mysql_query($sql, $this->databases[0]->getMysqlConnection());
+        $result = mysql_query($sql, $this->targetdb->getMysqlConnection());
         if (!$result) {
             return false;
         }

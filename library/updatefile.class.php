@@ -19,12 +19,10 @@ class UpdateFile {
             $this->qCollection = array("update" => array(), "delete" => array(), "insert" => array());
 
             // Connect
-            $this->targetdb = $this->session->databases[1];
-            $this->sourcedb = $this->session->databases[0];
-            $this->s_id = $this->sourcedb->getMysqlConnection();
-            $this->t_id = $this->targetdb->getMysqlConnection();
+            $this->s_id = $this->session->sourcedb->getMysqlConnection();
+            $this->t_id = $this->session->targetdb->getMysqlConnection();
             // store table names
-            $this->tables = array($this->sourcedb->getTables(), $this->targetdb->getTables());
+            $this->tables = array($this->session->sourcedb->getTables(), $this->session->targetdb->getTables());
         }
     }
 
@@ -262,7 +260,7 @@ class UpdateFile {
         $tables = array_merge($this->tables[0], $this->tables[1]);
         $tNames = array_unique(array_keys($tables));
 
-        $schema = generateScript($this->options,$tNames, $this->targetdb, $this->sourcedb);
+        $schema = generateScript($this->options,$tNames, $this->session->targetdb, $this->session->sourcedb);
         if ($schema != ""):
             fwrite($this->fh, $schema . "\n\n\n");
             unset($schema);
