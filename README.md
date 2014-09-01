@@ -12,12 +12,13 @@ before!
 Instructions
 ------------
 Make sure that following tables are writeable
-* cache
-* sql
+* `cache`
+* `sql`
 
 if it can't write to sql/updatepack.sql 
-use ```touch sql/updatepack.sql```
-```chmod 777 sql/updatepack.sql```
+use
+* `touch sql/updatepack.sql`
+* `chmod 777 sql/updatepack.sql`
 
 
 CopyRight 
